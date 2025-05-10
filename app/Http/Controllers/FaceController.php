@@ -60,10 +60,9 @@ class FaceController extends Controller
             $newState = filter_var($request->input('face_covered'), FILTER_VALIDATE_BOOLEAN);
 
 
-            $fullImageUrl = rtrim(env('R2_URL'), '/') . '/' . ltrim($path, '/');
-            $fullFrameUrl = rtrim(env('R2_URL'), '/') . '/' . ltrim($framePath, '/');
-
-
+            $fullImageUrl = $path ? rtrim(env('R2_URL'), '/') . '/' . ltrim($path, '/') : null;
+            $fullFrameUrl = $framePath ? rtrim(env('R2_URL'), '/') . '/' . ltrim($framePath, '/') : null;
+            
             // ✅ Save the Face record
             $face = new Face([
                 'image_path' =>  $fullImageUrl,
