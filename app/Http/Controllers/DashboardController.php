@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Face;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Device;
+use Carbon\Carbon;
+
+
 
 class DashboardController extends Controller
 {
@@ -13,6 +17,10 @@ class DashboardController extends Controller
         $totalFaces = Face::count();
         $coveredFaces = Face::where('face_covered', true)->count();
         $uncoveredFaces = Face::where('face_covered', false)->count();
+        $devices = Device::all()->map(function ($device) {
+            $device->is_online = $device->last_seen && Carbon::parse($device->last_seen)->gt(now()->subSeconds(60));
+            return $device;
+        });
 
         $recentFaces = Face::latest()->take(5)->get();
 
@@ -31,7 +39,8 @@ class DashboardController extends Controller
             'coveredFaces',
             'uncoveredFaces',
             'recentFaces',
-            'dailyStats'
+            'dailyStats',
+            'devices'
         ));
     }
 

@@ -81,7 +81,7 @@
                 >
                     <nav class="space-y-2">
                         <a
-                            href="{{ route('dashboard.dashboard') }}"
+                            href="{{ route('dashboard') }}"
                             class="flex items-center px-4 py-2 rounded {{ request()->routeIs('dashboard.dashboard') ? 'bg-gray-800' : 'hover:bg-gray-800' }}"
                         >
                             <i class="fas fa-chart-line mr-3"></i> Dashboard

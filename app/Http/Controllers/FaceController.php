@@ -12,20 +12,10 @@ class FaceController extends Controller
     public function store(Request $request)
     {
         try {
-            Log::info('Received face detection request', [
-                'has_image' => $request->hasFile('image'),
-                'has_frame' => $request->hasFile('frame'),
-                'face_covered' => $request->input('face_covered'),
-                'eyes_visible' => $request->input('eyes_visible'),
-                'mouth_visible' => $request->input('mouth_visible'),
-                'confidence' => $request->input('confidence'),
-            ]);
-
+            // ✅ Validate incoming data
             $request->validate([
                 'image' => 'required|image',
-                'face_covered' => ['required', function (
-                    $attribute, $value, $fail
-                ) {
+                'face_covered' => ['required', function ($attribute, $value, $fail) {
                     if (!in_array($value, ['true', 'false', true, false], true)) {
                         $fail('The face covered field must be true or false.');
                     }
@@ -44,30 +34,44 @@ class FaceController extends Controller
                 'frame' => 'nullable|image',
             ]);
 
-            $path = $request->file('image')->store('faces', 'public');
+            $path = null;
             $framePath = null;
-            if ($request->hasFile('frame')) {
-                $framePath = $request->file('frame')->store('frames', 'public');
-                Log::info('Frame stored at: ' . $framePath);
+
+            // ✅ Try to upload image to R2
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('faces', 'r2');
+                if (!$path) {
+                    Log::error('[UPLOAD FAILED] Image not stored to R2');
+                } else {
+                    Log::info('[UPLOAD SUCCESS] Image stored at: ' . $path);
+                }
             }
 
-            Log::info('Image stored at: ' . $path);
+            if ($request->hasFile('frame')) {
+                $framePath = $request->file('frame')->store('frames', 'r2');
+                if (!$framePath) {
+                    Log::error('[UPLOAD FAILED] Frame not stored to R2');
+                } else {
+                    Log::info('[UPLOAD SUCCESS] Frame stored at: ' . $framePath);
+                }
+            }
 
-            // Check last record for state change
             $lastFace = Face::latest()->first();
             $newState = filter_var($request->input('face_covered'), FILTER_VALIDATE_BOOLEAN);
-            if ($lastFace && $lastFace->face_covered === $newState) {
-                Log::info('No state change detected, skipping save.');
-                return response()->json(['message' => 'No state change, not saved.'], 200);
-            }
 
+
+            $fullImageUrl = rtrim(env('R2_URL'), '/') . '/' . ltrim($path, '/');
+            $fullFrameUrl = rtrim(env('R2_URL'), '/') . '/' . ltrim($framePath, '/');
+
+
+            // ✅ Save the Face record
             $face = new Face([
-                'image_path' => $path,
-                'face_covered' => filter_var($request->input('face_covered'), FILTER_VALIDATE_BOOLEAN),
+                'image_path' =>  $fullImageUrl,
+                'face_covered' => $newState,
                 'eyes_visible' => filter_var($request->input('eyes_visible'), FILTER_VALIDATE_BOOLEAN),
                 'mouth_visible' => filter_var($request->input('mouth_visible'), FILTER_VALIDATE_BOOLEAN),
                 'confidence' => $request->input('confidence'),
-                'frame_path' => $framePath,
+                'frame_path' => $fullFrameUrl,
             ]);
 
             $face->save();
@@ -83,8 +87,9 @@ class FaceController extends Controller
             ]);
 
             return response()->json(['message' => 'Saved', 'id' => $face->id], 200);
+
         } catch (\Exception $e) {
-            Log::error('Error in face detection: ' . $e->getMessage());
+            Log::error('[EXCEPTION] Error in face detection upload: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

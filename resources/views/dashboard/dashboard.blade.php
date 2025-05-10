@@ -47,6 +47,29 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold mb-4">Daily Statistics</h2>
         <canvas id="dailyStatsChart" height="100"></canvas>
+        <!-- Live Device Status -->
+        <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">Device Status (Live)</h2>
+            <div id="deviceStatusList">
+                @foreach ($devices as $device)
+                <div class="flex justify-between items-center py-2 border-b">
+                    <div>
+                        <strong>{{ $device->name }}</strong>
+                        <small class="text-gray-500 block"
+                            >Last seen:
+                            {{ $device->last_seen ? $device->last_seen->diffForHumans() : 'Never' }}</small
+                        >
+                    </div>
+                    <span
+                        class="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full 
+                    {{ $device->is_online ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}"
+                    >
+                        {{ $device->is_online ? 'Online' : 'Offline' }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+        </div>
     </div>
     <!-- Recent Detections -->
     <div class="bg-white rounded-lg shadow">
@@ -89,9 +112,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <img
-                                    src="{{ asset('storage/' . $face->image_path) }}"
+                                    src="{{$face->image_path }}"
                                     alt="Face"
-                                    class="h-12 w-12 rounded-lg object-cover"
+                                    class="h-24 w-24 rounded-lg object-cover"
                                 />
                             </td>
                         </tr>

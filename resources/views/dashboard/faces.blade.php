@@ -68,11 +68,11 @@
                             <span class="text-xs">{{ number_format($face->confidence, 2) }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <img src="{{ asset('storage/' . $face->image_path) }}" alt="Face" class="h-12 w-12 rounded-lg object-cover">
+                            <img src="{{ $face->image_path }}" alt="Face" class="h-24 w-24 rounded-lg object-cover">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($face->frame_path)
-                                <img src="{{ asset('storage/' . $face->frame_path) }}" alt="Frame" class="h-12 w-20 rounded-lg object-cover">
+                                <img src="{{ $face->frame_path }}" alt="Frame" class="h-24 w-24 rounded-lg object-cover">
                             @endif
                         </td>
                     </tr>

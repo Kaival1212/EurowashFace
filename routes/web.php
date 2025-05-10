@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('dashboard')->middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard.dashboard');
+    Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/faces', [DashboardController::class, 'faces'])->name('dashboard.faces');
     Route::get('/statistics', [DashboardController::class, 'statistics'])->name('dashboard.statistics');
 });
